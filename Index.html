@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Транзакции с цифровой валютой</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fdf6e3; /* светло-бежевый фон */
+            color: #3B2A1F; /* темно-коричневый текст */
+            margin: 0;
+            padding: 0;
+            position: relative; /* Для правильного позиционирования */
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #e8d1c0; /* светло-коричневый заголовок */
+            border-bottom: 2px solid #3B2A1F; /* коричневая граница */
+            border-radius: 10px; /* Скругленные углы */
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            text-align: center;
+            flex: 1; /* Для центрирования заголовка */
+            cursor: pointer; /* Указатель на заголовок */
+        }
+
+        .menu-button {
+            cursor: pointer;
+            font-weight: bold;
+            background: none;
+            border: none;
+            font-size: 18px;
+        }
+
+        .tabs {
+            display: none;
+            border: 2px solid #3B2A1F; /* коричневая граница */
+            background-color: white;
+            position: absolute;
+            top: 60px; /* отступ от заголовка */
+            left: 15px;
+            padding: 10px;
+            z-index: 10;
+            border-radius: 10px; /* Скругленные углы */
+        }
+
+        .tab {
+            display: none; /* скрыть все вкладки по умолчанию */
+            border: 2px solid #3B2A1F; /* коричневая граница */
+            padding: 10px;
+            border-radius: 10px; /* Скругленные углы */
+            margin-bottom: 10px; /* Отступ между вкладками */
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .active {
+            display: block; /* показать активную вкладку */
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tabs div {
+            font-size: 20px; /* Увеличенный размер текста */
+            padding: 15px; /* Увеличенный отступ */
+            border: 2px solid white; /* Белая граница вокруг пункта */
+            border-radius: 10px; /* Скругленные углы */
+            margin-bottom: 10px; /* Отступ между пунктами */
+            background-color: #e8d1c0; /* Фоновый цвет для пунктов списков */
+            cursor: pointer;
+            transition: background-color 0.3s; /* Плавный переход фона */
+        }
+
+        .tabs div:hover {
+            background-color: #d1b6a8; /* Изменение фона при наведении */
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8d1c0; /* светло-коричневый подвал */
+            border-top: 2px solid #3B2A1F; /* коричневая граница */
+            border-radius: 10px; /* Скругленные углы */
+        }
+
+        .news-container {
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Отступ между новостями */
+        }
+
+        .news {
+            border: 2px solid #3B2A1F; /* граница вокруг новостей */
+            padding: 10px;
+            background-color: white;
+            border-radius: 10px; /* Скругленные углы */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .news img {
+            width: 150px; /* Ширина изображения */
+            border-radius: 10px; /* Скругленные углы для изображения */
+        }
+
+        .news-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .news-link {
+            font-size: 14px;
+            color: #3B2A1F; /* Цвет ссылки */
+            text-decoration: none; /* Убираем подчеркивание */
+        }
+
+        .news-link:hover {
+            text-decoration: underline; /* Подчеркивание при наведении */
+        }
+    </style>
+    <script>
+        let menuOpen = false;
+
+        function toggleMenu() {
+            const tabs = document.getElementById("tabs");
+            menuOpen = !menuOpen;
+            tabs.style.display = menuOpen ? "block" : "none";
+        }
+
+        function closeMenu() {
+            const tabs = document.getElementById("tabs");
+            tabs.style.display = "none";
+            menuOpen = false;
+        }
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll(".tab");
+            tabs.forEach(tab => {
+                tab.classList.remove("active");
+                tab.style.display = "none"; // Скрыть все вкладки
+            });
+            const activeTab = document.getElementById(tabId);
+            activeTab.classList.add("active");
+            activeTab.style.display = "block"; // Показываем только активную вкладку
+            setTimeout(() => {
+                activeTab.style.opacity = "1";
+                activeTab.style.transform = "translateY(0)";
+            }, 10); // Для применения анимации
+            closeMenu(); // Закрыть меню после выбора
+
+            // Скрываем новости при переходе на вкладки
+            document.getElementById("newsContainer").style.display = "none";
+        }
+
+        function showNews() {
+            const tabs = document.querySelectorAll(".tab");
+            tabs.forEach(tab => {
+                tab.classList.remove("active");
+                tab.style.display = "none"; // Скрыть все вкладки
+            });
+            document.getElementById("newsContainer").style.display = "flex"; // Показываем контейнер с новостями
+        }
+
+        // Закрыть меню при нажатии вне его
+        window.onclick = function(event) {
+            if (menuOpen && !event.target.matches('.menu-button') && !event.target.matches('.tabs div')) {
+                closeMenu();
+            }
+        };
+
+        // Вернуться на главную страницу с новостями при нажатии на заголовок
+        document.addEventListener("DOMContentLoaded", function() {
+            const headerTitle = document.querySelector("h1");
+            headerTitle.addEventListener("click", showNews);
+        });
+
+        // Функция для получения новостей из API
+        async function fetchNews() {
+            const apiKey = 'YOUR_API_KEY'; // Замените на ваш API ключ
+            const response = await fetch(`https://api.example.com/news?apiKey=${apiKey}`);
+            const data = await response.json();
+            // Обработка данных и обновление новостей на странице
+            // Здесь необходимо добавить логику для отображения данных новостей
+        }
+
+        // Вызов функции для загрузки новостей при загрузке страницы
+        document.addEventListener("DOMContentLoaded", fetchNews);
+    </script>
+</head>
+<body>
+
+<header>
+    <button class="menu-button" onclick="toggleMenu()">Меню ☰</button>
+    <h1>Проект на тему<br>"Транзакции с цифровой валютой.<br>Алгоритм для физического лица"</h1>
+</header>
+
+<nav id="tabs" class="tabs">
+    <div onclick="showTab('exchangeTab')">Биржи</div>
+    <div onclick="showTab('cryptoTab')">Криптовалюты</div>
+    <div onclick="showTab('comparisonTab')">Сравнение</div>
+    <div onclick="showTab('algorithmTab')">Алгоритм</div> <!-- Новая опция -->
+    <div onclick="showTab('referenceMaterialsTab')">Справочные материалы</div> <!-- Новая опция -->
+</nav>
+
+<main>
+    <section id="exchangeTab" class="tab">
+        <h2>Биржи</h2>
+        <img src="https://example.com/exchange.jpg" alt="Биржи" width="300">
+        <p>Текст о биржах будет здесь.</p>
+    </section>
+
+    <section id="cryptoTab" class="tab">
+        <h2>Криптовалюты</h2>
+        <img src="https://example.com/cryptocurrencies.jpg" alt="Криптовалюты" width="300">
+        <p>Текст о криптовалютах будет здесь.</p>
+    </section>
+
+    <section id="comparisonTab" class="tab">
+        <h2>Сравнение</h2>
+        <img src="https://example.com/comparison.jpg" alt="Сравнение" width="300">
+        <p>Текст о сравнении будет здесь.</p>
+    </section>
+
+    <section id="algorithmTab" class="tab">
+        <h2>Алгоритм для физического лица</h2>
+        <p>Здесь будет описание алгоритма для физического лица, связанного с транзакциями с цифровой валютой.</p>
+    </section>
+
+    <section id="referenceMaterialsTab" class="tab">
+        <h2>Справочные материалы</h2>
+        <p>Здесь будут размещены справочные материалы по теме цифровых валют, включая руководства, статьи и другие ресурсы.</p>
+    </section>
+</main>
+
+<div id="newsContainer" class="news-container">
+    <div class="news">
+        <div>
+            <p class="news-title">Возможно, худший для биткоина февраль за 10 лет. Чего ждать дальше</p>
+            <a href="https://www.rbc.ru/crypto/news/67bf0f479a7947d4a6fd21e0" class="news-link">Читать далее</a>
+        </div>
+        <img src="https://s0.rbk.ru/v6_top_pics/resized/200xH/media/img/6/29/347405747296296.webp" alt="Возможно, худший для биткоина февраль за 10 лет. Чего ждать дальше">
+    </div>
+
+    <div class="news">
+        <div>
+            <p class="news-title">Криптобиржа Bybit объявила «войну» северокорейским хакерам. Каков ее план</p>
+            <a href="https://www.rbc.ru/crypto/news/67bf2ce99a794704a720f57b" class="news-link">Читать далее</a>
+        </div>
+        <img src="https://s0.rbk.ru/v6_top_pics/resized/200xH/media/img/8/33/347405830948338.webp" alt="Криптобиржа Bybit объявила «войну» северокорейским хакерам. Каков ее план">
+    </div>
+
+    <!-- Добавление дополнительных новостей -->
+    <div class="news">
+        <div>
+            <p class="news-title">Криптовалютный рынок: ожидания и реальность</p>
+            <a href="https://example.com/news3" class="news-link">Читать далее</a>
+        </div>
+        <img src="https://example.com/image3.jpg" alt="Криптовалютный рынок: ожидания и реальность">
+    </div>
+
+    <div class="news">
+        <div>
+            <p class="news-title">Будущее криптовалют: что нас ждет?</p>
+            <a href="https://example.com/news4" class="news-link">Читать далее</a>
+        </div>
+        <img src="https://example.com/image4.jpg" alt="Будущее криптовалют: что нас ждет?">
+    </div>
+
+    <!-- ... (добавьте остальные новости аналогично) ... -->
+</div>
+
+<footer>
+    <p>Made by Семенцов Вадим</p>
+</footer>
+
+</body>
+</html>
