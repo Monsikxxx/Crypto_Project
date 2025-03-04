@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Транзакции с цифровой валютой</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fdf6e3;
+            color: #3B2A1F;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #e8d1c0;
+            border-bottom: 2px solid #3B2A1F;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            text-align: center;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .menu-button {
+            cursor: pointer;
+            font-weight: bold;
+            background: none;
+            border: none;
+            font-size: 18px;
+        }
+
+        .tabs {
+            display: none;
+            border: 2px solid #3B2A1F;
+            background-color: white;
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            padding: 10px;
+            z-index: 10;
+            border-radius: 10px;
+        }
+
+        .tab {
+            display: none;
+            border: 2px solid #3B2A1F;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tabs div {
+            font-size: 20px;
+            padding: 15px;
+            border: 2px solid white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background-color: #e8d1c0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tabs div:hover {
+            background-color: #d1b6a8;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8d1c0;
+            border-top: 2px solid #3B2A1F;
+            border-radius: 10px;
+        }
+
+        .news-container {
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .news {
+            border: 2px solid #3B2A1F;
+            padding: 10px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .news img {
+            width: 150px;
+            border-radius: 10px;
+        }
+
+        .news-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .news-link {
+            font-size: 14px;
+            color: #3B2A1F;
+            text-decoration: none;
+        }
+
+        .news-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Мобильные стили */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            .news img {
+                width: 100px; /* Уменьшение ширины изображения для мобильных */
+            }
+        }
+    </style>
+    <script>
+        let menuOpen = false;
+
+        function toggleMenu() {
+            const tabs = document.getElementById("tabs");
+            menuOpen = !menuOpen;
+            tabs.style.display = menuOpen ? "block" : "none";
+        }
+
+        function closeMenu() {
+            const tabs = document.getElementById("tabs");
+            tabs.style.display = "none";
+            menuOpen = false;
+        }
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll(".tab");
+            tabs.forEach(tab => {
+                tab.classList.remove("active");
+                tab.style.display = "none"; // Скрыть все вкладки
+            });
+            const activeTab = document.getElementById(tabId);
+            activeTab.classList.add("active");
+            activeTab.style.display = "block"; // Показываем только активную вкладку
+            closeMenu(); // Закрыть меню после выбора
+            document.getElementById("newsContainer").style.display = "none"; // Скрыть новости
+        }
+
+        function showNews() {
+            const tabs = document.querySelectorAll(".tab");
+            tabs.forEach(tab => {
+                tab.classList.remove("active");
+                tab.style.display = "none"; // Скрыть все вкладки
+            });
+            document.getElementById("newsContainer").style.display = "flex"; // Показываем контейнер с новостями
+        }
+
+        function fetchNews() {
+            fetch('https://newsapi.org/v2/everything?q=криптовалюта&apiKey=YOUR_API_KEY') // Замените 'YOUR_API_KEY' вашим ключом
+                .then(response => response.json())
+                .then(data => {
+                    const newsContainer = document.getElementById('newsContainer');
+                    newsContainer.innerHTML = ''; // Очистка контейнера перед добавлением новостей
+                    data.articles.forEach(article => {
+                        const newsDiv = document.createElement('div');
+                        newsDiv.className = 'news';
+                        newsDiv.innerHTML = `
+                            <div>
+                                <p class="news-title">${article.title}</p>
+                                <a href="${article.url}" class="news-link">Читать далее</a>
+                            </div>
+                            <img src="${article.urlToImage}" alt="${article.title}"/>
+                        `;
+                        newsContainer.appendChild(newsDiv);
+                    });
+                })
+                .catch(error => console.error('Ошибка при загрузке новостей:', error));
+        }
+
+        function detectDevice() {
+            const userAgent = navigator.userAgent;
+            const isMobile = /Mobi|Android/i.test(userAgent);
+
+            if (isMobile) {
+                document.body.style.backgroundColor = "#f0f8ff"; // Изменение цвета фона для мобильных
+                document.querySelector("h1").innerText += " (мобильная версия)"; // Изменение заголовка
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            detectDevice(); // Определение устройства
+            const headerTitle = document.querySelector("h1");
+            headerTitle.addEventListener("click", showNews);
+            fetchNews(); // Загружаем новости при загрузке страницы
+        });
+    </script>
+</head>
+<body>
+
+<header>
+    <button class="menu-button" onclick="toggleMenu()">Меню ☰</button>
+    <h1>Проект на тему "Транзакции с цифровой валютой. Алгоритм для физического лица"</h1>
+</header>
+
+<nav id="tabs" class="tabs">
+    <div onclick="showTab('exchangeTab')">Биржи</div>
+    <div onclick="showTab('cryptoTab')">Криптовалюты</div>
+    <div onclick="showTab('comparisonTab')">Сравнение</div>
+    <div onclick="showTab('algorithmTab')">Алгоритм</div>
+</nav>
+
+<main>
+    <section id="exchangeTab" class="tab">
+        <h2>Биржи</h2>
+        <img src="https://example.com/exchange.jpg" alt="Биржи" width="300">
+        <p>Текст о биржах будет здесь.</p>
+    </section>
+
+    <section id="cryptoTab" class="tab">
+        <h2>Криптовалюты</h2>
+        <img src="https://example.com/cryptocurrencies.jpg" alt="Криптовалюты" width="300">
+        <p>Текст о криптовалютах будет здесь.</p>
+    </section>
+
+    <section id="comparisonTab" class="tab">
+        <h2>Сравнение</h2>
+        <img src="https://example.com/comparison.jpg" alt="Сравнение" width="300">
+        <p>Текст о сравнении будет здесь.</p>
+    </section>
+
+    <section id="algorithmTab" class="tab">
+        <h2>Алгоритм для физического лица</h2>
+        <p>Здесь будет описание алгоритма для физического лица, связанного с транзакциями с цифровой валютой.</p>
+    </section>
+</main>
+
+<div id="newsContainer" class="news-container">
+    <!-- Новости будут добавлены сюда динамически -->
+</div>
+
+<footer>
+    <p>Made by Семенцов Вадим</p>
+</footer>
+
+</body>
+</html>
